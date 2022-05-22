@@ -6,12 +6,10 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 //middle ware
-
 app.use(cors());
 app.use(express.json());
 
 // connect with mongodb
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.er99c.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -36,8 +34,7 @@ async function run() {
 }
 run().catch(console.dir);
 
-// api create
-
+// basic api create
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
