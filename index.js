@@ -23,12 +23,51 @@ async function run() {
     await client.connect();
     // tools create
     const toolCollection = client.db("py_electrics").collection("tools");
+    const orderCollection = client.db("py_electrics").collection("orders");
     // create api to load all tools
     app.get("/tool", async (req, res) => {
       const query = req.body;
       const result = await toolCollection.find(query).toArray();
       res.send(result);
     });
+
+    //post user orders in database...
+
+    app.post("/order", async (req, res) => {
+      const order = req.body;
+      const query = {
+        name: order.name,
+        price: order.price,
+        email: order.email,
+        address: order.address,
+      };
+      const exists = await orderCollection.findOne(query);
+      if (exists) {
+        return res.send({ success: false, order: exists });
+      }
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
+      // console.log(result);
+    });
+
+    // post booking in database
+
+    // app.post("/booking", async (req, res) => {
+    //   const booking = req.body;
+    //   const query = {
+    //     treatment: booking.treatment,
+    //     date: booking.date,
+    //     patient: booking.patient,
+    //   };
+    //   const exists = await bookingCollection.findOne(query);
+    //   if (exists) {
+    //     return res.send({ success: false, booking: exists });
+    //   }
+    //   const result = await bookingCollection.insertOne(booking);
+    //   return res.send({ success: true, result });
+    // });
+
+    // find by id
     app.get("/tool/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
