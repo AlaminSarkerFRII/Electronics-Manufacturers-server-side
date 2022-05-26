@@ -109,7 +109,6 @@ async function run() {
     });
 
     // insert update user in db akhane jwt asign kora jabe cause sign hocche
-
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -124,7 +123,7 @@ async function run() {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "1h" }
       );
-      console.log("HI", token);
+      // console.log("HI", token);
       res.send({ result, token });
     });
 
@@ -146,9 +145,7 @@ async function run() {
       } else {
         res.status(403).send({ message: "Forbidden" });
       }
-
       // check user is admin or not
-
       app.get("/admin/:email", async (req, res) => {
         const email = req.params.email;
         const user = await userCollection.findOne({ email: email });
