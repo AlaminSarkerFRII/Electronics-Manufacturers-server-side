@@ -24,18 +24,30 @@ const client = new MongoClient(uri, {
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ message: "UnAuthorization Access" });
+    return res.status(401).send({ message: "Unauthorized Access" });
   }
-  const token = authHeader.split(" ")[1]; // token er second elements
+  const token = authHeader.split(" ")[1];
+  // verify a token symmetric
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      res.status(403).send({ message: "Forbidden Access" });
-      return;
+      return res.status(403).send({ message: "Forbidden access" });
     }
     req.decoded = decoded;
-    next(); // forwarding
+    // call to next for forward
+    next();
   });
 }
+
+// const token = authHeader.split(" ")[1];
+// // verify a token symmetric
+// jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+//   if (err) {
+//     return res.status(403).send({ message: "Forbidden access" });
+//   }
+//   req.decoded = decoded;
+//   // call to next for forward
+//   next();
+// });
 
 // verify JWT token end
 
@@ -54,7 +66,6 @@ async function run() {
     });
 
     // get all orders in my orders page
-
     app.get("/order", async (req, res) => {
       const query = {};
       const orders = await orderCollection.find(query).toArray();
@@ -90,8 +101,16 @@ async function run() {
       // console.log(tool);
     });
 
-    // delete
+    // payment for specific order
+    app.get("/order/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const order = await orderCollection.findOne({ _id: ObjectId(id) });
+      res.send(order);
+      // console.log(tool);
+    });
 
+    // delete
     app.delete("/order/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
@@ -121,7 +140,7 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "3h" }
       );
       // console.log("HI", token);
       res.send({ result, token });
