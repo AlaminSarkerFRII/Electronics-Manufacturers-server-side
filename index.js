@@ -46,11 +46,23 @@ async function run() {
     const toolCollection = client.db("py_electrics").collection("tools");
     const orderCollection = client.db("py_electrics").collection("orders");
     const userCollection = client.db("py_electrics").collection("users");
+    const reviewCollection = client.db("py_electrics").collection("reviews");
+    const paymentCollection = client.db("py_electrics").collection("payments");
     // create api to load all tools
     app.get("/tool", async (req, res) => {
       const query = req.body;
       const result = await toolCollection.find(query).toArray();
       res.send(result);
+    });
+
+    // get all reviews
+
+    // get all orders in my orders page
+    app.get("/review", async (req, res) => {
+      const query = {};
+      const reviews = await reviewCollection.find(query).toArray();
+      res.send(reviews);
+      // console.log(orders);
     });
 
     // get all orders in my orders page
@@ -110,6 +122,23 @@ async function run() {
         payment_method_types: ["card"],
       });
       res.send({ clientSecret: paymentIntent.client_secret });
+    });
+
+    // payment update
+
+    app.patch("/order/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+      const result = await paymentCollection.insertOne(payment);
+      const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+      res.send(updatedOrder);
     });
 
     // delete
