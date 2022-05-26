@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 //middle ware
@@ -37,19 +38,6 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
-
-// const token = authHeader.split(" ")[1];
-// // verify a token symmetric
-// jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-//   if (err) {
-//     return res.status(403).send({ message: "Forbidden access" });
-//   }
-//   req.decoded = decoded;
-//   // call to next for forward
-//   next();
-// });
-
-// verify JWT token end
 
 async function run() {
   try {
@@ -108,6 +96,20 @@ async function run() {
       const order = await orderCollection.findOne({ _id: ObjectId(id) });
       res.send(order);
       // console.log(tool);
+    });
+
+    // payment system
+
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const order = req.body;
+      const price = order.price;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
     });
 
     // delete
