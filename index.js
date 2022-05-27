@@ -56,8 +56,6 @@ async function run() {
     });
 
     // get all reviews
-
-    // get all orders in my orders page
     app.get("/review", async (req, res) => {
       const query = {};
       const reviews = await reviewCollection.find(query).toArray();
@@ -103,27 +101,21 @@ async function run() {
     // get user order by id
     app.get("/tool/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const tool = await toolCollection.findOne({ _id: ObjectId(id) });
       res.send(tool);
-      // console.log(tool);
     });
 
     // payment for specific order
     app.get("/order/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const order = await orderCollection.findOne({ _id: ObjectId(id) });
       res.send(order);
-      // console.log(tool);
     });
 
     // payment system
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const order = req.body;
-      // console.log(order);
       const price = order.price;
-      // console.log(price);
       const amount = price * 100;
       console.log(amount);
       const paymentIntent = await stripe.paymentIntents.create({
@@ -151,17 +143,14 @@ async function run() {
       res.send(updatedOrder);
     });
 
-    // delete
+    // user order DELETE from Database with ui
     app.delete("/order/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const order = await orderCollection.deleteOne({ _id: ObjectId(id) });
       res.send(order);
-      // console.log(tool);
     });
 
     // get All from database
-
     app.get("/user", verifyJWT, async (req, res) => {
       const query = {};
       const users = await userCollection.find(query).toArray();
@@ -205,6 +194,8 @@ async function run() {
       } else {
         res.status(403).send({ message: "Forbidden" });
       }
+    });
+    
       // check user is admin or not
       app.get("/admin/:email", async (req, res) => {
         const email = req.params.email;
@@ -212,7 +203,7 @@ async function run() {
         const isAdmin = user.role === "admin";
         res.send({ admin: isAdmin });
       });
-    });
+    
   } finally {
   }
 }
