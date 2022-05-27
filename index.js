@@ -92,6 +92,14 @@ async function run() {
       // console.log(result);
     });
 
+    // post new tools
+
+    app.post("/tool", verifyJWT, async (req, res) => {
+      const newTool = req.body;
+      const tools = await toolCollection.insertOne(newTool);
+      res.send(tools);
+    });
+
     // get user order by id
     app.get("/tool/:id", async (req, res) => {
       const id = req.params.id;
@@ -111,11 +119,13 @@ async function run() {
     });
 
     // payment system
-
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const order = req.body;
+      // console.log(order);
       const price = order.price;
+      // console.log(price);
       const amount = price * 100;
+      console.log(amount);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
