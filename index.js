@@ -55,6 +55,19 @@ async function run() {
       res.send(result);
     });
 
+    // verify Admin 
+
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({ email: requester });
+      if (requesterAccount.role === 'admin') {
+        next();
+      }
+      else {
+        res.status(403).send({ message: 'forbidden' });
+      }
+    }
+
     // get all reviews
     app.get("/review", async (req, res) => {
       const query = {};
@@ -63,16 +76,32 @@ async function run() {
       // console.log(orders);
     });
 
-    // get all orders in my orders page
-    app.get("/order", async (req, res) => {
-      const query = {};
-      const orders = await orderCollection.find(query).toArray();
-      res.send(orders);
-      // console.log(orders);
+    // post reviews 
+    app.post("/review", verifyJWT, async (req, res) => {
+      const newTool = req.body;
+      const reviews = await reviewCollection.insertOne(newTool);
+      res.send(reviews);
     });
 
+    // get all orders in my orders page
+    app.get("/order", async (req, res) => {
+      const email = req.query.email
+      // console.log(email)
+      const decodedEmail = req.query.email
+      if(email===decodedEmail){
+        const query = {email:email}
+        const orders = await orderCollection.find(query).toArray();
+      return res.send(orders);
+
+      }
+      else {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+    });
+
+
     //post user orders in database...
-    app.post("/order", async (req, res) => {
+    app.post("/order",verifyJWT, async (req, res) => {
       const order = req.body;
       const query = {
         name: order.name,
@@ -90,7 +119,6 @@ async function run() {
     });
 
     // post new tools
-
     app.post("/tool", verifyJWT, async (req, res) => {
       const newTool = req.body;
       const tools = await toolCollection.insertOne(newTool);
@@ -126,7 +154,6 @@ async function run() {
     });
 
     // payment update
-
     app.patch("/order/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const payment = req.body;
@@ -149,14 +176,37 @@ async function run() {
       res.send(order);
     });
 
-    // get All from database
+    // get All users from database
     app.get("/user", verifyJWT, async (req, res) => {
       const query = {};
       const users = await userCollection.find(query).toArray();
       res.send(users);
     });
 
-    // insert update user in db akhane jwt asign kora jabe cause sign hocche
+    // ===========insert update user in db ===========//
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name:user.name,
+          phone:user.phone,
+          about:user.about,
+          education:user.education,
+          profession:user.profession,
+          address:user.address,
+          linkedin:user.linkedin,
+          img:user.img,
+        }
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
+
+    // ==========insert update user in db akhane jwt asign kora jabena cause sign hocche===============//
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
