@@ -56,7 +56,6 @@ async function run() {
     });
 
     // verify Admin 
-
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
       const requesterAccount = await userCollection.findOne({ email: requester });
@@ -75,7 +74,6 @@ async function run() {
       res.send(reviews);
       // console.log(orders);
     });
-
     // post reviews 
     app.post("/review", verifyJWT, async (req, res) => {
       const newTool = req.body;
@@ -83,11 +81,21 @@ async function run() {
       res.send(reviews);
     });
 
-    // get all orders in my orders page
-    app.get("/order", async (req, res) => {
+    //=============get all orders for admin page ==============//
+
+      // get all reviews
+      app.get("/orders", verifyJWT, async (req, res) => {
+        const query = {};
+        const orders = await orderCollection.find(query).toArray();
+        res.send(orders);
+        // console.log(orders);
+      });
+
+
+    // get orders by every one user in my orders page
+    app.get("/order",verifyJWT, async (req, res) => {
       const email = req.query.email
-      // console.log(email)
-      const decodedEmail = req.query.email
+      const decodedEmail = req.decoded.email
       if(email===decodedEmail){
         const query = {email:email}
         const orders = await orderCollection.find(query).toArray();
@@ -177,11 +185,27 @@ async function run() {
     });
 
     // get All users from database
-    app.get("/user", verifyJWT, async (req, res) => {
+    app.get("/user",  async (req, res) => {
       const query = {};
       const users = await userCollection.find(query).toArray();
+      // console.log(users)
       res.send(users);
     });
+
+
+    /// ===========new api  =============
+    app.post("/user",  async (req, res) => {
+      const email = req.body
+      console.log(email)
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1d" }
+      );
+      // console.log(users)
+      res.send(token);
+    });
+    
 
     // ===========insert update user in db ===========//
     app.put("/user/:email", async (req, res) => {
@@ -207,7 +231,7 @@ async function run() {
 
 
     // ==========insert update user in db akhane jwt asign kora jabena cause sign hocche===============//
-    app.put("/user/:email", async (req, res) => {
+    app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
       const filter = { email: email };
@@ -219,7 +243,7 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "3h" }
+        { expiresIn: "1d" }
       );
       // console.log("HI", token);
       res.send({ result, token });
@@ -246,7 +270,7 @@ async function run() {
     });
 
       // check user is admin or not
-      app.get("/admin/:email", async (req, res) => {
+      app.get("/admin/:email",verifyJWT, async (req, res) => {
         const email = req.params.email;
         const user = await userCollection.findOne({ email: email });
         const isAdmin = user.role === "admin";
