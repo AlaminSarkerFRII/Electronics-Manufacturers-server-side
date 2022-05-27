@@ -72,7 +72,6 @@ async function run() {
     });
 
     //post user orders in database...
-
     app.post("/order", async (req, res) => {
       const order = req.body;
       const query = {
@@ -195,7 +194,7 @@ async function run() {
         res.status(403).send({ message: "Forbidden" });
       }
     });
-    
+
       // check user is admin or not
       app.get("/admin/:email", async (req, res) => {
         const email = req.params.email;
