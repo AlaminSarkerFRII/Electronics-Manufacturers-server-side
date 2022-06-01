@@ -48,12 +48,7 @@ async function run() {
     const userCollection = client.db("py_electrics").collection("users");
     const reviewCollection = client.db("py_electrics").collection("reviews");
     const paymentCollection = client.db("py_electrics").collection("payments");
-    // create api to load all tools
-    app.get("/tool", async (req, res) => {
-      const query = req.body;
-      const result = await toolCollection.find(query).toArray();
-      res.send(result);
-    });
+    
 
     // verify Admin 
     const verifyAdmin = async (req, res, next) => {
@@ -67,10 +62,42 @@ async function run() {
       }
     }
 
+    // ==============create api to load all tools===================>
+    app.get("/tool",verifyJWT, async (req, res) => {
+      // const query = req.body; // not need in get api
+      const result = await toolCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    // ===DELETE=== manage tool / products====>
+
+    app.delete("tool/:id",async(req,res)=>{
+      const id = req.params.id
+      const query = { _id: ObjectId(id)}
+      const tool = await toolCollection.deleteOne(query).toArray()
+      res.send(tool);
+
+    })
+  //======= post new tools==========POST======>
+  app.post("/tool", verifyJWT, async (req, res) => {
+    const newTool = req.body;
+    const tools = await toolCollection.insertOne(newTool);
+    res.send(tools);
+  });
+
+  // get user order by tool id
+  app.get("/tool/:id", async (req, res) => {
+    const id = req.params.id;
+    const tool = await toolCollection.findOne({ _id: ObjectId(id) });
+    res.send(tool);
+  });
+    
+
     // get all reviews
     app.get("/review", async (req, res) => {
-      const query = {};
-      const reviews = await reviewCollection.find(query).toArray();
+      // const query = {}; // not need in get api
+      const reviews = await reviewCollection.find().toArray();
       res.send(reviews);
       // console.log(orders);
     });
@@ -85,8 +112,8 @@ async function run() {
 
       // get all reviews
       app.get("/orders", verifyJWT, async (req, res) => {
-        const query = {};
-        const orders = await orderCollection.find(query).toArray();
+        // const query = {};
+        const orders = await orderCollection.find().toArray();
         res.send(orders);
         // console.log(orders);
       });
@@ -126,19 +153,7 @@ async function run() {
       // console.log(result);
     });
 
-    // post new tools
-    app.post("/tool", verifyJWT, async (req, res) => {
-      const newTool = req.body;
-      const tools = await toolCollection.insertOne(newTool);
-      res.send(tools);
-    });
-
-    // get user order by id
-    app.get("/tool/:id", async (req, res) => {
-      const id = req.params.id;
-      const tool = await toolCollection.findOne({ _id: ObjectId(id) });
-      res.send(tool);
-    });
+  
 
     // payment for specific order
     app.get("/order/:id", verifyJWT, async (req, res) => {
@@ -186,8 +201,8 @@ async function run() {
 
     // get All users from database
     app.get("/user",  async (req, res) => {
-      const query = {};
-      const users = await userCollection.find(query).toArray();
+      // const query = {};// not need in get api
+      const users = await userCollection.find().toArray();
       // console.log(users)
       res.send(users);
     });
