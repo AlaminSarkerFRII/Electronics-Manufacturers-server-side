@@ -49,7 +49,6 @@ async function run() {
     const reviewCollection = client.db("py_electrics").collection("reviews");
     const paymentCollection = client.db("py_electrics").collection("payments");
     
-
     // verify Admin 
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
