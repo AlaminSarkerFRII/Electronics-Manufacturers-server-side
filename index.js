@@ -42,7 +42,7 @@ function verifyJWT(req, res, next) {
 async function run() {
   try {
     await client.connect();
-    // tools create
+    // tools create and collections
     const toolCollection = client.db("py_electrics").collection("tools");
     const orderCollection = client.db("py_electrics").collection("orders");
     const userCollection = client.db("py_electrics").collection("users");
