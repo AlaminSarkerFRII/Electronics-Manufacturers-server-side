@@ -62,7 +62,7 @@ async function run() {
     }
 
     // ==============create api to load all tools===================>
-    app.get("/tool",verifyJWT, async (req, res) => {
+    app.get("/tool", async (req, res) => {
       const result = await toolCollection.find().toArray();
       res.send(result);
     });
